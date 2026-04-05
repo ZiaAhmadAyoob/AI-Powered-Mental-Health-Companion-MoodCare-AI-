@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a5f;
+  
+  --color-accent-teal: #14b8a6;
+  --color-accent-purple: #a855f7;
+
+  --color-dark-bg: #0f172a;
+  --color-dark-card: #1e293b;
+  --color-dark-border: #334155;
+  --color-dark-text: #e2e8f0;
+  --color-dark-muted: #94a3b8;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  @apply text-slate-100;
+  background-color: var(--color-dark-bg);
+}
+
+/* Dark mode utilities */
+.dark .dark\:bg-dark-bg { background-color: var(--color-dark-bg); }
+.dark .dark\:bg-dark-card { background-color: var(--color-dark-card); }
+.dark .dark\:border-dark-border { border-color: var(--color-dark-border); }
+.dark .dark\:text-dark-text { color: var(--color-dark-text); }
+.dark .dark\:text-dark-muted { color: var(--color-dark-muted); }
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(59,130,246,0.3); }
+  50% { box-shadow: 0 0 20px rgba(59,130,246,0.5), 0 0 40px rgba(59,130,246,0.2); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out both;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out both;
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Hover glow effect for interactive elements */
+.hover-glow {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(59,130,246,0.3), 0 4px 15px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* Staggered animation delays for cards */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* Shimmer loading effect */
+.shimmer-bg {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ========== MOOD-REACTIVE BACKGROUND ========== */
+
+/* Mood blob color overrides via data-mood attribute on <html> */
+[data-mood="happy"] .mood-blob-1 { background-color: rgba(251,191,36,0.25) !important; }
+[data-mood="happy"] .mood-blob-2 { background-color: rgba(245,158,11,0.2) !important; }
+[data-mood="happy"] .mood-blob-3 { background-color: rgba(252,211,77,0.15) !important; }
+
+[data-mood="sad"] .mood-blob-1 { background-color: rgba(99,102,241,0.25) !important; }
+[data-mood="sad"] .mood-blob-2 { background-color: rgba(79,70,229,0.2) !important; }
+[data-mood="sad"] .mood-blob-3 { background-color: rgba(129,140,248,0.15) !important; }
+
+[data-mood="stressed"] .mood-blob-1 { background-color: rgba(239,68,68,0.2) !important; }
+[data-mood="stressed"] .mood-blob-2 { background-color: rgba(249,115,22,0.18) !important; }
+[data-mood="stressed"] .mood-blob-3 { background-color: rgba(251,146,60,0.12) !important; }
+
+[data-mood="anxious"] .mood-blob-1 { background-color: rgba(245,158,11,0.22) !important; }
+[data-mood="anxious"] .mood-blob-2 { background-color: rgba(234,179,8,0.18) !important; }
+[data-mood="anxious"] .mood-blob-3 { background-color: rgba(253,224,71,0.12) !important; }
+
+[data-mood="calm"] .mood-blob-1 { background-color: rgba(20,184,166,0.2) !important; }
+[data-mood="calm"] .mood-blob-2 { background-color: rgba(52,211,153,0.18) !important; }
+[data-mood="calm"] .mood-blob-3 { background-color: rgba(110,231,183,0.12) !important; }
+
+.mood-blob-1, .mood-blob-2, .mood-blob-3 {
+  transition: background-color 1.5s ease-in-out;
+}
+
+/* Dark mode mood overrides - slightly dimmer */
+.dark [data-mood="happy"] .mood-blob-1,
+[data-mood="happy"].dark .mood-blob-1 { background-color: rgba(251,191,36,0.12) !important; }
+.dark [data-mood="sad"] .mood-blob-1,
+[data-mood="sad"].dark .mood-blob-1 { background-color: rgba(99,102,241,0.12) !important; }
+.dark [data-mood="stressed"] .mood-blob-1,
+[data-mood="stressed"].dark .mood-blob-1 { background-color: rgba(239,68,68,0.1) !important; }
+
+/* ========== FLOATING ACTION BUTTON ========== */
+
+.fab-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+}
+
+.fab-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+}
+
+.fab-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(37,99,235,0.5);
+}
+
+.fab-menu-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0) translateY(10px);
+  opacity: 0;
+}
+
+.fab-menu-item.visible {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
