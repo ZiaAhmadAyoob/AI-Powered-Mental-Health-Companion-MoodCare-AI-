@@ -7,6 +7,7 @@ const translations = {
     journal: 'Journal',
     insights: 'Insights',
     settings: 'Settings',
+    contact: 'Contact Us',
     logout: 'Logout',
 
     // Dashboard
@@ -167,6 +168,9 @@ const translations = {
     alreadyHaveAccount: "Already have an account? ",
     signUp: 'Sign up',
     logIn: 'Log in',
+    continueWithGoogle: 'Continue with Google',
+    continueWithFacebook: 'Continue with Facebook',
+    orContinueWith: 'or continue with email',
 
     // Floating AI Actions
     talkToAI: '💬 Talk to AI',
@@ -182,6 +186,7 @@ const translations = {
     journal: 'جرنل',
     insights: 'بصیرت',
     settings: 'ترتیبات',
+    contact: 'ہم سے رابطہ کریں',
     logout: 'لاگ آؤٹ',
 
     // Dashboard
@@ -342,6 +347,9 @@ const translations = {
     alreadyHaveAccount: 'کیا آپ کا پہلے سے اکاؤنٹ ہے؟ ',
     signUp: 'سائن اپ',
     logIn: 'لاگ ان',
+    continueWithGoogle: 'گوگل سے جاری رکھیں',
+    continueWithFacebook: 'فیس بک سے جاری رکھیں',
+    orContinueWith: 'یا ای میل سے جاری رکھیں',
 
     // Floating AI Actions
     talkToAI: '💬 AI سے بات کریں',

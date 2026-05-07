@@ -83,7 +83,7 @@ Mental health is one of the most underserved areas in healthcare globally. The c
 | Behavioral Insight Engine | Discovers patterns like "you feel better after journaling" |
 | Multi-Level Crisis Detection | 3-signal system with 4 escalation levels |
 | CBT Thought Reframing | Detects cognitive distortions and reframes negative thoughts |
-| Gemini 2.0 Flash Integration | Context-aware, personalized AI responses |
+| Gemini 3 Integration | Context-aware, personalized AI responses |
 
 ### 📸 Multimodal Features
 | Feature | Description |
@@ -122,37 +122,37 @@ Mental health is one of the most underserved areas in healthcare globally. The c
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     FRONTEND (React)                     │
-│  Dashboard │ Chat │ Journal │ Mood │ Insights │ Profile  │
-│         Tailwind CSS │ Axios │ React Router              │
-│    Web Speech API │ WebRTC Webcam │ Recharts              │
+│                     FRONTEND (React)                    │
+│  Dashboard │ Chat │ Journal │ Mood │ Insights │ Profile │
+│   Tailwind CSS │ Axios │ React Router                   │
+│    Web Speech API │ WebRTC Webcam │ Recharts            │
 └──────────────────────────┬──────────────────────────────┘
                            │ HTTP / REST API
 ┌──────────────────────────▼──────────────────────────────┐
-│                   BACKEND (FastAPI)                       │
-│  JWT Auth │ CORS │ Pydantic Schemas │ SQLAlchemy ORM     │
-│                                                           │
+│                   BACKEND (FastAPI)                     │
+│  JWT Auth │ CORS │ Pydantic Schemas │ SQLAlchemy ORM    │
+│                                                         │
 │  ┌─────────────────────────────────────────────────┐    │
-│  │              ORCHESTRATOR AGENT                  │    │
-│  │   Routes requests → coordinates all agents       │    │
+│  │              ORCHESTRATOR AGENT                 │    │
+│  │   Routes requests → coordinates all agents      │    │
 │  └───┬───────┬──────────┬──────────┬───────────────┘    │
-│      │       │          │          │                      │
-│  ┌───▼──┐ ┌──▼───┐ ┌───▼──┐ ┌────▼──┐ ┌──────────┐    │
-│  │Emot. │ │Mem.  │ │Crisis│ │Pred.  │ │ Insight  │    │
-│  │Agent │ │Agent │ │Agent │ │Agent  │ │ Agent    │    │
-│  └───┬──┘ └──┬───┘ └───┬──┘ └────┬──┘ └────┬─────┘    │
-│      │       │          │          │          │           │
+│      │       │          │          │                    │
+│  ┌───▼──┐ ┌──▼───┐  ┌───▼──┐  ┌────▼──┐  ┌──────────┐   │
+│  │Emot. │ │Mem.  │  │Crisis│  │Pred.  │  │ Insight  │   │
+│  │Agent │ │Agent │  │Agent │  │Agent  │  │ Agent    │   │
+│  └───┬──┘ └──┬───┘  └───┬──┘  └────┬──┘  └────┬─────┘   │
+│      │       │          │          │          │         │
 │  ┌───▼───────▼──────────▼──────────▼──────────▼────┐    │
-│  │              AI LAYER                             │    │
-│  │  Gemini 3.0 Flash │ HuggingFace │ LSTM │ DeepFace│   │
-│  └──────────────────────────────────────────────────┘    │
-│                                                           │
+│  │                   AI LAYER                      │    │
+│  │     Gemini 3.1   │ HuggingFace │ LSTM │ DeepFace│    │
+│  └────────────────────────────────────────────────-┘    │
+│                                                         │
 │  ┌──────────────────┐   ┌───────────────────────────┐   │
 │  │  MySQL Database  │   │  FAISS Vector Store       │   │
 │  │  Users/Moods/    │   │  Per-user semantic memory │   │
 │  │  Chat/Journal/   │   │  embeddings (384-dim)     │   │
 │  │  Crisis logs     │   └───────────────────────────┘   │
-│  └──────────────────┘                                    │
+│  └──────────────────┘                                   │
 └─────────────────────────────────────────────────────────┘
 ```
 

@@ -5,12 +5,14 @@ import Sidebar from './Sidebar';
 import FloatingAIActions from './FloatingAIActions';
 import BreathingExercise from './BreathingExercise';
 import { useApp } from '../context/AppContext';
+import CrisisModal from './CrisisModal';
 import { t } from '../translations';
 
 export default function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isBreathingOpen, setIsBreathingOpen] = useState(false);
+  const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
   const { darkMode, language, currentMood, userProfile, isSidebarOpen, setIsSidebarOpen, logout } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,7 +63,7 @@ export default function Layout() {
       )}
 
       {/* Hybrid Sidebar */}
-      <Sidebar />
+      <Sidebar onOpenCrisisModal={() => setIsCrisisModalOpen(true)} />
 
       <main ref={mainRef} className="flex-1 flex flex-col h-full overflow-hidden relative z-10 w-full min-w-0">
         
@@ -185,6 +187,7 @@ export default function Layout() {
       {/* Floating AI Actions */}
       <FloatingAIActions onOpenBreathing={() => setIsBreathingOpen(true)} />
       <BreathingExercise isOpen={isBreathingOpen} onClose={() => setIsBreathingOpen(false)} />
+      <CrisisModal isOpen={isCrisisModalOpen} onClose={() => setIsCrisisModalOpen(false)} />
     </div>
   );
 }

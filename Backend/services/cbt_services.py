@@ -64,5 +64,8 @@ Do the following in exactly 3 short paragraphs:
 
 Be warm, never clinical or robotic.
 """
-    response = gemini.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-3-flash-preview",
+        contents=prompt,
+    )
     return response.text.strip()

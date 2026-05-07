@@ -42,15 +42,15 @@ async def run_tests():
     print("\n[3] Crisis Agent")
 
     safe_result = check_crisis("I feel a bit tired today", "neutral", "", TEST_USER_ID)
-    print(f"    Safe message → level: {safe_result['level']}")
+    print(f"    Safe message -> level: {safe_result['level']}")
     assert safe_result["level"] == "none", "False positive on safe message"
 
     medium_result = check_crisis("I feel so hopeless and overwhelmed", "sadness", "", TEST_USER_ID)
-    print(f"    Medium message → level: {medium_result['level']}, score: {medium_result['score']}")
+    print(f"    Medium message -> level: {medium_result['level']}, score: {medium_result['score']}")
     assert medium_result["level"] in ["medium", "high"], "Should detect concern"
 
     critical_result = check_crisis("I want to end my life", "sadness", "", TEST_USER_ID)
-    print(f"    Critical message → level: {critical_result['level']}")
+    print(f"    Critical message -> level: {critical_result['level']}")
     assert critical_result["level"] == "critical", "Must detect critical signal"
 
     print("    PASSED OK")

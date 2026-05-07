@@ -1,7 +1,7 @@
 """Pydantic schemas for request/response validation."""
 
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List   
 from datetime import datetime
 
 
@@ -23,11 +23,38 @@ class TokenResponse(BaseModel):
     user: "UserResponse"
 
 
+class SocialLoginRequest(BaseModel):
+    provider: str            # 'google' | 'facebook'
+    email: Optional[str] = None
+    name: Optional[str] = None
+    access_token: Optional[str] = None  # provider OAuth token (used in production)
+
+
+class SocialExchangeRequest(BaseModel):
+    provider: str
+    code: str
+    redirect_uri: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+class MessageResponse(BaseModel):
+    message: str
+    code: Optional[str] = None  # Only populated in dev mode (no email service)
+
+
 # ── User ──────────────────────────────────────────────
 class UserResponse(BaseModel):
     id: int
     name: str
-    email: str
+    email: EmailStr 
     phone: str
     preferred_tone: str
     reminder_time: str
@@ -110,3 +137,26 @@ class InsightsSummary(BaseModel):
     total_journals: int
     total_chats: int
     streak_days: int
+
+# ── Contact Message ─────────────────────────────────────
+class ContactMessageCreate(BaseModel):
+    name: str
+    email: EmailStr 
+    subject: str
+    message: str
+
+class FeedbackRequest(BaseModel):
+    email: EmailStr
+    message: str
+
+class ContactMessageResponse(BaseModel):
+    id: int
+    user_id: Optional[int]
+    name: str
+    email: EmailStr 
+    subject: str
+    message: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -12,9 +12,9 @@ export function AppProvider({ children }) {
   const [language, setLanguage] = useState(() => localStorage.getItem("moodcare-lang") || "en");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // ── Auth state ────────────────────────────────────────────────────
+  // ── Auth state (check both storages for "Remember me" support) ───
   const [isAuthenticated, setIsAuthenticated] = useState(
-    () => !!localStorage.getItem("moodcare-token")
+    () => !!(localStorage.getItem("moodcare-token") || sessionStorage.getItem("moodcare-token"))
   );
 
   // ── User profile ──────────────────────────────────────────────────
@@ -76,8 +76,12 @@ export function AppProvider({ children }) {
     document.documentElement.setAttribute("data-mood", currentMood);
   }, [currentMood]);
 
-  const login = (token, user) => {
-    localStorage.setItem("moodcare-token", token);
+  const login = (token, user, rememberMe = false) => {
+    if (rememberMe) {
+      localStorage.setItem("moodcare-token", token);
+    } else {
+      sessionStorage.setItem("moodcare-token", token);
+    }
     setIsAuthenticated(true);
     if (user) {
       setUserProfile(prev => ({
@@ -91,6 +95,7 @@ export function AppProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem("moodcare-token");
+    sessionStorage.removeItem("moodcare-token");
     setIsAuthenticated(false);
     setUserProfile({
       name: "", email: "", phone: "",
