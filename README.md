@@ -1,4 +1,4 @@
-# MoodCare AI 🧠💙
+# MoodCare AI
 ### Intelligent Multi-Agent Mental Health Companion
 
 <div align="center">
@@ -10,6 +10,9 @@
 ![Gemini](https://img.shields.io/badge/Gemini-3.0%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![OAuth](https://img.shields.io/badge/OAuth-Google%20%7C%20Facebook-EA4335?style=for-the-badge&logo=google&logoColor=white)
+![SMTP](https://img.shields.io/badge/Email-SMTP%20Integrated-34A853?style=for-the-badge&logo=gmail&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 **A fully AI-powered mental health companion system built on a multi-agent architecture.**
@@ -36,6 +39,9 @@
 - [Database Schema](#-database-schema)
 - [Frontend Pages](#-frontend-pages)
 - [AI Models Used](#-ai-models-used)
+- [Email System](#-email-system)
+- [Security Features](#-security-features)
+- [Deployment](#-deployment)
 - [Screenshots](#-screenshots)
 - [Testing](#-testing)
 - [Known Issues & Fixes](#-known-issues--fixes)
@@ -116,21 +122,52 @@ Mental health is one of the most underserved areas in healthcare globally. The c
 | Dark / Light Mode | System-aware theme with smooth transitions |
 | Mobile Responsive | Hybrid sidebar — full sidebar desktop, hamburger mobile |
 
+### 🔐 Authentication & Security
+| Feature | Description |
+|---|---|
+| OTP Email Verification | 6-digit code sent via SMTP during signup to verify email authenticity |
+| Google OAuth Login | Full production OAuth 2.0 with code exchange and user info retrieval |
+| Facebook OAuth Login | Full production OAuth 2.0 with code exchange and user info retrieval |
+| OAuth Callback Handler | Dedicated `/auth/callback` route with error handling and auto-redirect |
+| Account Lockout System | 1-hour account lock after 5 consecutive failed login attempts |
+| Password Reset via OTP | 6-digit emailed code with 15-minute expiry for secure password recovery |
+| OTP Rate Limiting | Max 2 OTP requests per 20 minutes, max 5 verification attempts per day |
+| JWT Bearer Auth | All protected endpoints secured with JSON Web Token authorization |
+
+### 📧 Email & Communications
+| Feature | Description |
+|---|---|
+| Async SMTP Email System | Production `aiosmtplib` integration for non-blocking email delivery |
+| Welcome Email | Branded HTML email sent automatically after successful registration |
+| Signup OTP Email | Styled HTML email with 6-digit verification code and 15-min expiry |
+| Password Reset Email | Branded OTP email for forgot-password flow |
+| Feedback Admin Alert | HTML email forwarded to admin with user details and reply-to header |
+| Feedback Thank You Email | Automated thank-you email sent to user after feedback submission |
+| Background Email Tasks | All emails dispatched via FastAPI `BackgroundTasks` to avoid blocking |
+
+### 📋 Legal & Compliance
+| Feature | Description |
+|---|---|
+| Privacy Policy Page | Full legal privacy policy with data rights, accessible from login |
+| Terms of Service Page | Complete terms of service, linked during registration flow |
+| Contact / Feedback Page | Bento-grid contact form with email support, live chat, and crisis links |
+
 ---
 
 ## 🏗 System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     FRONTEND (React)                    │
-│  Dashboard │ Chat │ Journal │ Mood │ Insights │ Profile │
-│   Tailwind CSS │ Axios │ React Router                   │
-│    Web Speech API │ WebRTC Webcam │ Recharts            │
+│                     FRONTEND (React + Vite)              │
+│  Dashboard │ Chat │ Journal │ Mood │ Insights │ Profile  │     
+│  Contact │ Privacy │ Terms │ Settings │ AuthCallback  │
+│   Tailwind CSS │ Axios │ React Router │ Recharts       │ 
+│    Web Speech API │ WebRTC Webcam │ OAuth Popup        │
 └──────────────────────────┬──────────────────────────────┘
                            │ HTTP / REST API
 ┌──────────────────────────▼──────────────────────────────┐
 │                   BACKEND (FastAPI)                     │
-│  JWT Auth │ CORS │ Pydantic Schemas │ SQLAlchemy ORM    │
+│  JWT Auth │ CORS │ Pydantic │ SQLAlchemy ORM │ OAuth    │
 │                                                         │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │              ORCHESTRATOR AGENT                 │    │
@@ -151,8 +188,13 @@ Mental health is one of the most underserved areas in healthcare globally. The c
 │  │  MySQL Database  │   │  FAISS Vector Store       │   │
 │  │  Users/Moods/    │   │  Per-user semantic memory │   │
 │  │  Chat/Journal/   │   │  embeddings (384-dim)     │   │
-│  │  Crisis logs     │   └───────────────────────────┘   │
-│  └──────────────────┘                                   │
+│  │  Crisis/Resets/  │   └───────────────────────────┘   │
+│  │  Contact/OTPs    │                                   │
+│  └──────────────────┘   ┌───────────────────────────┐   │
+│                        │  SMTP Email Service        │   │
+│                        │  aiosmtplib (async)        │   │
+│                        │  OTP / Welcome / Feedback  │   │
+│                        └───────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -262,6 +304,8 @@ Detects cognitive distortions in user messages using pattern matching across 4 d
 | passlib[bcrypt] | Latest | Password hashing |
 | python-dotenv | Latest | Environment variable management |
 | Uvicorn | Latest | ASGI server |
+| aiosmtplib | Latest | Async SMTP email delivery |
+| requests | Latest | HTTP client for OAuth token exchange |
 
 ### AI & Machine Learning
 | Technology | Version | Purpose |
@@ -305,24 +349,28 @@ Detects cognitive distortions in user messages using pattern matching across 4 d
 MoodCare AI/
 │
 ├── Backend/
-│   ├── main.py                        # FastAPI app entry point
-│   ├── config.py                      # Configuration settings
+│   ├── main.py                        # FastAPI app entry point + auto-migrations
+│   ├── config.py                      # Configuration settings (DB, JWT, SMTP, OAuth)
 │   ├── database.py                    # SQLAlchemy engine and session
-│   ├── models.py                      # All database models
+│   ├── models.py                      # All database models (7 tables)
 │   ├── schemas.py                     # Pydantic request/response schemas
 │   ├── auth.py                        # JWT authentication dependency
+│   ├── email_utils.py                 # Async SMTP email templates (OTP, Welcome, Feedback)
 │   ├── requirements.txt               # Python dependencies
 │   ├── test_system.py                 # End-to-end agent test suite
+│   ├── Dockerfile                     # Docker container config (HuggingFace Spaces)
+│   ├── Procfile                       # Heroku / PaaS deployment config
 │   ├── .env                           # Environment variables (not in git)
 │   │
 │   ├── routers/
-│   │   ├── auth_router.py             # POST /auth/signup, /auth/login
+│   │   ├── auth_router.py             # Register, Login, Social OAuth, OTP, Password Reset
 │   │   ├── chat_router.py             # POST /api/chat, GET /api/chat/history
-│   │   ├── mood_router.py             # POST /api/mood, GET /api/mood/history
-│   │   ├── journal_router.py          # POST /api/journal, GET /api/journal/history
-│   │   ├── insights_router.py         # GET /api/insights, GET /api/predict
-│   │   ├── user_router.py             # GET/PUT /api/profile
-│   │   └── face_router.py             # POST /api/analyze-face
+│   │   ├── mood_router.py             # POST /api/moods, GET /api/moods
+│   │   ├── journal_router.py          # POST /api/journals, GET /api/journals
+│   │   ├── insights_router.py         # GET /api/insights/*, GET /api/insights/predict
+│   │   ├── user_router.py             # GET/PUT /api/users/me, GET /api/users/me/stats
+│   │   ├── face_router.py             # POST /api/face/analyze-face
+│   │   └── contact_router.py          # POST /api/contact (feedback + email)
 │   │
 │   ├── services/
 │   │   ├── orchestrator.py            # Central agent coordinator
@@ -332,23 +380,18 @@ MoodCare AI/
 │   │   ├── prediction_service.py      # LSTM mood forecasting
 │   │   ├── insight_service.py         # Pattern discovery engine
 │   │   ├── face_emotion_service.py    # DeepFace webcam analysis
-│   │   └── cbt_service.py             # CBT thought reframing
+│   │   └── cbt_services.py            # CBT thought reframing
 │   │
 │   ├── memory_store/                  # FAISS indexes (per user)
-│   │   ├── user_1.index
-│   │   └── user_1.meta
-│   │
 │   └── ml_models/                     # Trained LSTM weights (per user)
-│       └── lstm_user_1.pt
 │
 └── Frontend/
     ├── index.html
     ├── vite.config.js
     ├── package.json
-    ├── .gitignore
     │
     └── src/
-        ├── App.jsx                    # Root router
+        ├── App.jsx                    # Root router (all routes)
         ├── main.jsx                   # React entry point
         ├── index.css                  # Global styles + Tailwind
         ├── translations.js            # English / Urdu translations
@@ -356,27 +399,36 @@ MoodCare AI/
         ├── context/
         │   └── AppContext.jsx         # Global state (auth, mood, AI state)
         │
+        ├── hooks/
+        │   └── useVoice.js            # Custom hook for STT + TTS
+        │
         ├── services/
         │   ├── api.js                 # Axios API layer (all endpoints)
         │   └── voiceService.js        # STT + TTS classes
         │
         ├── components/
-        │   ├── Layout.jsx             # Main app shell + header
+        │   ├── Layout.jsx             # Main app shell + header + mood blobs
         │   ├── Sidebar.jsx            # Navigation sidebar
         │   ├── ProtectedRoute.jsx     # Auth guard
         │   ├── BreathingExercise.jsx  # Guided breathing modal
         │   ├── FloatingAIActions.jsx  # FAB quick actions
+        │   ├── CrisisModal.jsx        # Emergency crisis resources modal
         │   └── WebcamEmotion.jsx      # Live face emotion detector
         │
         └── pages/
-            ├── Login.jsx              # Auth page (login + signup)
+            ├── Login.jsx              # Auth page (login + signup + OTP + social)
+            ├── Login.css              # Dedicated login page styles
+            ├── AuthCallback.jsx       # OAuth redirect handler
             ├── Dashboard.jsx          # AI-powered home page
             ├── Chat.jsx               # Voice + text AI chat
             ├── MoodTracker.jsx        # Mood logging with AI feedback
             ├── Journal.jsx            # AI journal + webcam emotion
             ├── Insights.jsx           # Charts + predictions + insights
             ├── Profile.jsx            # User profile management
-            └── Settings.jsx           # App preferences
+            ├── Settings.jsx           # App preferences
+            ├── Contact.jsx            # Contact form + feedback submission
+            ├── Privacy.jsx            # Privacy Policy page
+            └── Terms.jsx              # Terms of Service page
 ```
 
 ---
@@ -498,10 +550,25 @@ ALL TESTS PASSED
 | `HF_TOKEN` | Yes | HuggingFace API token (for higher rate limits) |
 | `SECRET_KEY` | Yes | JWT signing secret (use a long random string) |
 | `ALGORITHM` | Yes | JWT algorithm (use HS256) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | JWT token lifetime (default: 30) |
+| `SMTP_HOST` | Yes | SMTP server hostname (e.g. `smtp.gmail.com`) |
+| `SMTP_PORT` | Yes | SMTP port (`465` for SSL, `587` for TLS) |
+| `SMTP_USER` | Yes | SMTP login username |
+| `SMTP_PASSWORD` | Yes | SMTP login password or app password |
+| `SENDER_EMAIL` | Yes | Sender email address shown in emails |
+| `FORGOT_PASSWORD_SECRET_KEY` | Yes | Secret for password reset token signing |
+| `FORGOT_PASSWORD_TOKEN_EXPIRE_MINUTES` | Yes | Reset code expiry time in minutes |
+| `GOOGLE_CLIENT_ID` | No | Google OAuth 2.0 client ID |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth 2.0 client secret |
+| `FACEBOOK_CLIENT_ID` | No | Facebook OAuth app ID |
+| `FACEBOOK_CLIENT_SECRET` | No | Facebook OAuth app secret |
 
 **Where to get API keys:**
 - Gemini API Key: [Google AI Studio](https://aistudio.google.com/app/apikey)
 - HuggingFace Token: [HuggingFace Settings](https://huggingface.co/settings/tokens)
+- Google OAuth: [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+- Facebook OAuth: [Meta for Developers](https://developers.facebook.com/apps/)
+- Gmail SMTP: [Google App Passwords](https://myaccount.google.com/apppasswords)
 
 ---
 
@@ -511,8 +578,15 @@ ALL TESTS PASSED
 
 | Method | Endpoint | Body | Description |
 |---|---|---|---|
-| POST | `/auth/signup` | `{name, email, password}` | Register new user |
-| POST | `/auth/login` | `{email, password}` | Login, returns JWT token |
+| POST | `/api/auth/send-signup-otp` | `{email}` | Send 6-digit OTP to verify email |
+| POST | `/api/auth/register` | `{name, email, password, otp}` | Register with OTP verification |
+| POST | `/api/auth/login` | `{email, password}` | Login, returns JWT token |
+| POST | `/api/auth/token` | OAuth2 form | OAuth2-compatible login for Swagger UI |
+| POST | `/api/auth/social` | `{provider, email, name, access_token}` | Social login with access token |
+| POST | `/api/auth/social/exchange` | `{provider, code, redirect_uri}` | Exchange OAuth code for token |
+| POST | `/api/auth/forgot-password` | `{email}` | Send password reset OTP |
+| POST | `/api/auth/reset-password` | `{token, new_password}` | Reset password with OTP |
+| POST | `/api/auth/feedback` | `{email, message}` | Submit feedback (sends email) |
 
 ### Chat
 
@@ -569,8 +643,21 @@ ALL TESTS PASSED
 
 | Method | Endpoint | Body | Description |
 |---|---|---|---|
-| GET | `/api/profile` | — | Get current user profile |
-| PUT | `/api/profile` | `{name, language, ...}` | Update profile |
+| GET | `/api/users/me` | — | Get current user profile |
+| PUT | `/api/users/me` | `{name, phone, ...}` | Update profile |
+| GET | `/api/users/me/stats` | — | Get user activity statistics |
+
+### Contact / Feedback
+
+| Method | Endpoint | Body | Description |
+|---|---|---|---|
+| POST | `/api/contact` | `{name, email, subject, message}` | Submit contact message + email |
+
+### Dashboard
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/insights/dashboard` | Single call for all dashboard data |
 
 > All endpoints except `/auth/*` require `Authorization: Bearer <token>` header.
 
@@ -581,45 +668,50 @@ ALL TESTS PASSED
 ```sql
 -- Users table
 CREATE TABLE users (
-    id            INT PRIMARY KEY AUTO_INCREMENT,
-    name          VARCHAR(100) NOT NULL,
-    email         VARCHAR(150) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    language      VARCHAR(10)  DEFAULT 'en',
-    anonymous     TINYINT      DEFAULT 0,
-    created_at    DATETIME     DEFAULT CURRENT_TIMESTAMP
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+    name                  VARCHAR(100) NOT NULL,
+    email                 VARCHAR(255) UNIQUE NOT NULL,
+    hashed_password       VARCHAR(255) NOT NULL,
+    phone                 VARCHAR(20)  DEFAULT '',
+    preferred_tone        VARCHAR(20)  DEFAULT 'friendly',
+    reminder_time         VARCHAR(10)  DEFAULT '09:00',
+    anonymous_mode        TINYINT      DEFAULT 0,
+    avatar_url            TEXT         DEFAULT '',
+    failed_login_attempts INT          DEFAULT 0,
+    locked_until          DATETIME     NULL,
+    created_at            DATETIME     DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Chat messages
 CREATE TABLE chat_messages (
     id         INT PRIMARY KEY AUTO_INCREMENT,
     user_id    INT NOT NULL,
+    sender     VARCHAR(10) NOT NULL,
     message    TEXT NOT NULL,
-    response   TEXT,
-    emotion    VARCHAR(50),
-    timestamp  DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    emotion    VARCHAR(20) DEFAULT 'calm',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Mood logs
-CREATE TABLE mood_logs (
-    id      INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    mood    VARCHAR(50) NOT NULL,
-    note    TEXT,
-    date    DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE moods (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    user_id      INT NOT NULL,
+    mood_state   VARCHAR(20) NOT NULL,
+    stress_level INT DEFAULT 50,
+    note         TEXT DEFAULT '',
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Journal entries
-CREATE TABLE journal_entries (
-    id         INT PRIMARY KEY AUTO_INCREMENT,
-    user_id    INT NOT NULL,
-    text       TEXT NOT NULL,
-    emotion    VARCHAR(50),
-    reflection TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE journals (
+    id            INT PRIMARY KEY AUTO_INCREMENT,
+    user_id       INT NOT NULL,
+    content       TEXT NOT NULL,
+    ai_suggestion TEXT DEFAULT '',
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Crisis logs
@@ -632,22 +724,61 @@ CREATE TABLE crisis_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Password reset tokens
+CREATE TABLE password_resets (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    user_id         INT NOT NULL,
+    token           VARCHAR(255) UNIQUE NOT NULL,
+    expires_at      DATETIME NOT NULL,
+    used            TINYINT DEFAULT 0,
+    verify_attempts INT DEFAULT 0,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Contact / Feedback messages
+CREATE TABLE contact_messages (
+    id         INT PRIMARY KEY AUTO_INCREMENT,
+    user_id    INT NULL,
+    name       VARCHAR(100) NOT NULL,
+    email      VARCHAR(255) NOT NULL,
+    subject    VARCHAR(255) NOT NULL,
+    message    TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Signup OTP verification codes
+CREATE TABLE signup_otps (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    email           VARCHAR(255) NOT NULL,
+    token           VARCHAR(255) NOT NULL,
+    expires_at      DATETIME NOT NULL,
+    used            TINYINT DEFAULT 0,
+    verify_attempts INT DEFAULT 0,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
 
 ## 📱 Frontend Pages
 
-| Page | Route | AI Features |
+| Page | Route | Key Features |
 |---|---|---|
-| Login / Signup | `/login` | JWT auth, profile fetch on login |
+| Login / Signup | `/login` | JWT auth, OTP email verification, Google/Facebook OAuth, forgot password |
+| OAuth Callback | `/auth/callback` | Handles OAuth redirect, exchanges code, auto-login |
 | Dashboard | `/dashboard` | Real mood from DB, AI insights, LSTM prediction, weekly summary |
 | AI Chat | `/chat` | Voice input/output, 6 agents, CBT reframing, crisis detection |
 | Mood Tracker | `/mood-tracker` | AI suggestion after logging, prediction trigger |
 | Journal | `/journal` | Webcam face emotion, AI reflection, CBT reframe, emotion detection |
 | Insights | `/insights` | Mood timeline chart, emotion calendar, pattern insights, prediction card |
-| Profile | `/profile` | Avatar upload, AI tone preference, reminder time |
+| Profile | `/profile` | Avatar upload, AI tone preference, reminder time, stats |
 | Settings | `/settings` | Dark mode, language (EN/UR), anonymous mode, notifications |
+| Contact | `/contact` | Bento-grid feedback form, email support, crisis links |
+| Privacy Policy | `/privacy` | Full legal privacy policy with data rights |
+| Terms of Service | `/terms` | Complete terms of service |
 
 ---
 
@@ -660,6 +791,74 @@ CREATE TABLE crisis_logs (
 | `all-MiniLM-L6-v2` | Sentence Transformers | Text embeddings (384-dim) | Memory storage and retrieval |
 | Custom LSTM | PyTorch (trained per user) | Mood sequence prediction | After 7+ mood logs |
 | DeepFace (opencv backend) | DeepFace library | Facial emotion recognition | Journal page webcam |
+
+---
+
+## 📧 Email System
+
+MoodCare AI uses a fully async SMTP email system powered by `aiosmtplib`. All emails are dispatched via FastAPI `BackgroundTasks` to ensure zero blocking on API responses.
+
+**File:** `backend/email_utils.py`
+
+| Email Type | Trigger | Template |
+|---|---|---|
+| Signup OTP | User requests account verification | Branded HTML with 6-digit code, 15-min expiry warning |
+| Welcome Email | Successful registration | Feature overview with personalized greeting |
+| Password Reset | Forgot password request | OTP code with expiry notice |
+| Feedback to Admin | User submits feedback form | Grid layout with user info, subject, message, reply button |
+| Feedback Thank You | User submits feedback form | Green-themed confirmation with response timeline |
+
+All email templates feature:
+- **Responsive HTML** with inline CSS for maximum email client compatibility
+- **Gradient headers** with brand colors (indigo/purple)
+- **Plain-text fallback** for clients that don't support HTML
+- **Reply-To header** on feedback emails for easy admin response
+
+---
+
+## 🛡️ Security Features
+
+### Account Lockout
+| Parameter | Value |
+|---|---|
+| Max failed login attempts | 5 |
+| Lockout duration | 60 minutes |
+| Auto-reset | Counters clear after lockout expires |
+| Scope | Per-user, persisted in database |
+
+### OTP Rate Limiting
+| Parameter | Value |
+|---|---|
+| Forgot password OTPs | Max 2 per 20 minutes |
+| OTP verification attempts | Max 5 per day |
+| OTP expiry | 15 minutes |
+| On exceed | All unused codes invalidated |
+
+### Auto-Migration System
+The `main.py` startup includes an auto-migration block that safely adds new columns (`failed_login_attempts`, `locked_until`, `verify_attempts`) to existing tables without requiring manual SQL.
+
+---
+
+## 🚀 Deployment
+
+### Docker (HuggingFace Spaces)
+
+```dockerfile
+FROM python:3.10-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 libsm6 libxext6 libxrender-dev
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 7860
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+```
+
+### Heroku / PaaS
+
+```
+web: uvicorn main:app --host 0.0.0.0 --port $PORT
+```
 
 ---
 
@@ -770,7 +969,13 @@ client = genai.Client(api_key="YOUR_KEY")
 - [ ] **Custom Model Fine-tuning** — Fine-tune emotion model on mental health datasets
 - [ ] **Report Generation** — PDF weekly emotional health report
 - [ ] **Calendar Integration** — Sync reminders with Google Calendar
-- [ ] **Push Notifications** — Smart nudges based on usage patterns
+- [x] **Push Notifications** — Smart nudges based on usage patterns (Contextual notification system implemented)
+- [x] **Email Notifications** — OTP verification, welcome emails, feedback alerts (Full SMTP system)
+- [x] **Social Login** — Google and Facebook OAuth 2.0 (Production OAuth with code exchange)
+- [x] **Account Security** — Login lockout and OTP rate limiting (Implemented)
+- [x] **Docker Deployment** — Containerized backend for cloud hosting (Dockerfile + Procfile)
+- [x] **Legal Pages** — Privacy Policy and Terms of Service (Full pages with navigation)
+- [x] **Contact System** — Feedback form with email integration (Bento-grid UI + async SMTP)
 
 ---
 
@@ -825,4 +1030,4 @@ MoodCare AI is an educational and experimental project. It is **not a substitute
 
 ⭐ Star this repository if it helped you | 🐛 Report issues | 🍴 Fork and contribute
 
-</div># AI-mental-Healthcare-Companion
+</div>
